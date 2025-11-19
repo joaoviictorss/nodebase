@@ -19,6 +19,14 @@ const Home = () => {
     })
   );
 
+  const testAi = useMutation(
+    trpc.testAi.mutationOptions({
+      onSuccess: () => {
+        toast.success("AI response received");
+      },
+    })
+  );
+
   return (
     <div>
       <h1>Workflows</h1>
@@ -27,6 +35,16 @@ const Home = () => {
           <li key={workflow.id}>{JSON.stringify(workflow, null, 2)}</li>
         ))}
       </ul>
+
+      <Button
+        disabled={testAi.isPending}
+        onClick={() =>
+          testAi.mutate({ prompt: "Olá, como vai?" })
+        }
+      >
+        Test AI
+      </Button>
+
       <Button disabled={create.isPending} onClick={() => create.mutate()}>
         Create Workflow
       </Button>
