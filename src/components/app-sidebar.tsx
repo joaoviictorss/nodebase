@@ -32,17 +32,17 @@ const menuItems = [
     title: "Main",
     items: [
       {
-        title: "Workflows",
+        title: "Automações",
         icon: FolderOpenIcon,
         url: "/workflows",
       },
       {
-        title: "Credentials",
+        title: "Credenciais",
         icon: KeyIcon,
         url: "/credentials",
       },
       {
-        title: "Executions",
+        title: "Execuções",
         icon: HistoryIcon,
         url: "/executions",
       },
