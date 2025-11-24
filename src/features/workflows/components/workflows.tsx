@@ -1,24 +1,41 @@
 "use client";
 
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { WorkflowIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
+  EmptyView,
   EntityContainer,
   EntityHeader,
+  EntityItem,
+  EntityList,
   EntityPagination,
   EntitySearch,
+  ErrorView,
+  LoadingView,
 } from "@/components/entity-components";
+import type { Workflow } from "@/generated/prisma";
 import { useEntitySearch } from "@/hooks/use-entity-search";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import { useWorkflowsParams } from "../hooks/use-workfloes-params";
 import {
   useCreateWorkflow,
+  useRemoveWorkflow,
   useSuspenseWorkflows,
 } from "../hooks/use-workflows";
 
 export const WorkflowsList = () => {
   const workflows = useSuspenseWorkflows();
 
-  return <pre>{JSON.stringify(workflows.data, null, 2)}</pre>;
+  return (
+    <EntityList
+      items={workflows.data?.items || []}
+      renderItem={(item) => <WorkflowsItem workflow={item} />}
+      getKey={(item) => item.id}
+      emptyView={<WorkflowsEmpty />}
+    />
+  );
 };
 
 export const WorkflowsListHeader = ({ disabled }: { disabled: boolean }) => {
@@ -95,5 +112,75 @@ export const WorkflowsContainer = ({
     >
       {children}
     </EntityContainer>
+  );
+};
+
+export const WorkflowsLoading = () => {
+  return <LoadingView message="Carregando automações..." />;
+};
+
+export const WorkflowsError = () => {
+  return <ErrorView message="Erro ao carregar automações." />;
+};
+
+export const WorkflowsEmpty = () => {
+  const createWorkflow = useCreateWorkflow();
+  const router = useRouter();
+  const { handleError, modal } = useUpgradeModal();
+
+  const handleCreateWorkflow = () => {
+    createWorkflow.mutate(undefined, {
+      onSuccess: (data) => {
+        router.push(`/workflows/${data.id}`);
+      },
+      onError: (error) => {
+        handleError(error);
+      },
+    });
+  };
+  return (
+    <>
+      {modal}
+      <EmptyView
+        message="Crie uma nova automação para automatizar suas tarefas."
+        onNew={handleCreateWorkflow}
+      />
+    </>
+  );
+};
+
+export const WorkflowsItem = ({ workflow }: { workflow: Workflow }) => {
+  const removeWorkflow = useRemoveWorkflow();
+
+  const handleRemoveWorkflow = async () => {
+    await removeWorkflow.mutateAsync({ id: workflow.id });
+  };
+
+  return (
+    <EntityItem
+      href={`/workflows/${workflow.id}`}
+      title={workflow.name}
+      subtitle={
+        <>
+          Atualizado{" "}
+          {formatDistanceToNow(new Date(workflow.updatedAt), {
+            addSuffix: true,
+            locale: ptBR,
+          })}
+          {" • "}Criado{" "}
+          {formatDistanceToNow(new Date(workflow.createdAt), {
+            addSuffix: true,
+            locale: ptBR,
+          })}
+        </>
+      }
+      image={
+        <div className="size-8 flex items-center justify-center">
+          <WorkflowIcon className="size-5 text-muted-foreground" />
+        </div>
+      }
+      onRemove={handleRemoveWorkflow}
+      isRemoving={removeWorkflow.isPending}
+    />
   );
 };
