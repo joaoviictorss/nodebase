@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
   WorkflowsContainer,
+  WorkflowsError,
   WorkflowsList,
   WorkflowsLoading,
 } from "@/features/workflows/components/workflows";
@@ -24,7 +25,7 @@ const WorkflowsPage = async ({ searchParams }: WorkflowsPageProps) => {
   return (
     <WorkflowsContainer>
       <HydrateClient>
-        <ErrorBoundary fallback={<span>Error</span>}>
+        <ErrorBoundary fallback={<WorkflowsError />}>
           <Suspense fallback={<WorkflowsLoading />}>
             <WorkflowsList />
           </Suspense>
